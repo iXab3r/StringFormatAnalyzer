@@ -3,13 +3,18 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using TestHelper;
+
+using RoslynTester.DiagnosticResults;
+using RoslynTester.Helpers;
+using RoslynTester.Helpers.CSharp;
+
 using StringFormatAnalyzer;
+using StringFormatAnalyzer.Test.Verifiers;
 
 namespace StringFormatAnalyzer.Test
 {
 	[TestClass]
-	public class UnitTest : CodeFixVerifier
+	public class UnitTest : CSharpDiagnosticVerifier
 	{
 
 		//No diagnostics expected to show up
@@ -18,7 +23,7 @@ namespace StringFormatAnalyzer.Test
 		{
 			var test = @"";
 
-			VerifyCSharpDiagnostic(test);
+			this.VerifyDiagnostic(test);
 		}
 
 		[TestMethod]
@@ -37,72 +42,28 @@ namespace ConsoleApplication1
 	{   
 			public void TestMethod()
 			{
-				var str = String.Format(""test {1} {3} {2} {5} {4}"",1,2,3,4,5);
+				var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5, 6);
 
 			}
 	}
 }";
-			String.Format("test {1} {3} {2} {5} {4}", 1,2,3,4,5);
 
-			VerifyCSharpDiagnostic(test);
-		}
-
-		//Diagnostic and CodeFix both triggered and checked for
-		[TestMethod]
-		public void TestMethod2()
-		{
-			var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-        class TypeName
-        {   
-        }
-    }";
 			var expected = new DiagnosticResult
 			{
 				Id = StringFormatAnalyzerAnalyzer.DiagnosticId,
-				Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
+				Message = String.Format(Resources.AnalyzerMessageFormat,"0 1 3 2 5 4"),
 				Severity = DiagnosticSeverity.Warning,
 				Locations =
 					new[] {
-							new DiagnosticResultLocation("Test0.cs", 11, 15)
+							new DiagnosticResultLocation("Test0.cs", 14, 29)
 						}
 			};
 
-			VerifyCSharpDiagnostic(test, expected);
 
-			var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
-    namespace ConsoleApplication1
-    {
-        class TYPENAME
-        {   
-        }
-    }";
-			VerifyCSharpFix(test, fixtest);
+			VerifyDiagnostic(test, expected);
 		}
 
-		protected override CodeFixProvider GetCSharpCodeFixProvider()
-		{
-			return new StringFormatAnalyzerCodeFixProvider();
-		}
 
-		protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-		{
-			return new StringFormatAnalyzerAnalyzer();
-		}
+		protected override DiagnosticAnalyzer DiagnosticAnalyzer => new StringFormatAnalyzerAnalyzer();
 	}
 }
