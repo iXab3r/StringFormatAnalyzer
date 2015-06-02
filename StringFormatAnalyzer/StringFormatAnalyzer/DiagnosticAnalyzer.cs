@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -74,7 +73,15 @@ namespace StringFormatAnalyzer
 
 				var formatString = expression.ArgumentList.Arguments[0].ToString();
 				var tokens = BreakToTokens(formatString);
+				var args = expression.ArgumentList.Arguments.Skip(1).ToArray();
+
 				Debug.WriteLine("Tokens:\r\n\t{0}", String.Join("\r\n\t", tokens.Select(x => x.ToString())));
+				if (args.Length != tokens.Length)
+				{
+					Debug.WriteLine("Wrong args count. Expected {0}, got {1}", tokens.Length, args.Length);
+					return;
+				}
+
 
 				if (!IsOrdered(tokens))
 				{
@@ -93,7 +100,8 @@ namespace StringFormatAnalyzer
 				if (token.Index > maxTokenIndex)
 				{
 					maxTokenIndex = token.Index;
-				} else
+				}
+				else
 				{
 					return false;
 				}
@@ -161,56 +169,6 @@ namespace StringFormatAnalyzer
 			}
 		}
 
-		private class StringFormatToken
-		{
-			private static Regex m_indexParser = new Regex(@"\{\s*(.*?)\s*\}");
 
-			private readonly Match m_token;
-
-			private Lazy<int> m_index;
-
-			public StringFormatToken(Match _token)
-			{
-				if (_token == null)
-				{
-					throw new ArgumentNullException(nameof(_token));
-				}
-				m_token = _token;
-				m_index = new Lazy<int>(() => ValueFactory(m_token.Value), LazyThreadSafetyMode.PublicationOnly);
-			}
-
-			public int Index => m_index.Value;
-
-			public string Token => m_token.Value;
-
-			private static int ValueFactory(string _token)
-			{
-				if (_token == null)
-				{
-					return -1;
-				}
-				var match = m_indexParser.Match(_token);
-				var matchingValue = match.Groups[1].Value;
-				//Debug.WriteLine("Match for '{0}' is '{1}' (success: {2})", _token, matchingValue, match.Success);
-				int result;
-				if (!match.Success || !Int32.TryParse(matchingValue, out result))
-				{
-					return -1;
-				}
-
-				return result;
-			}
-
-			/// <summary>
-			///     Returns a string that represents the current object.
-			/// </summary>
-			/// <returns>
-			///     A string that represents the current object.
-			/// </returns>
-			public override string ToString()
-			{
-				return $"Index: {Index}, Token: {Token}";
-			}
-		}
 	}
 }

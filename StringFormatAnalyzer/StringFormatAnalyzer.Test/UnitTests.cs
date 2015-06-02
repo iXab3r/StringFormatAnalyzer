@@ -27,26 +27,15 @@ namespace StringFormatAnalyzer.Test
 		}
 
 		[TestMethod]
-		public void TestMethodNaming()
+		public void AssertThatSimpleReorderingTriggersDiag()
 		{
 			var test = @"
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-namespace ConsoleApplication1
-{
-	class TypeName
-	{   
-			public void TestMethod()
-			{
-				var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5, 6);
+		public void TestMethod()
+		{
+			var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5, 6);
 
-			}
-	}
-}";
+		}
+";
 
 			var expected = new DiagnosticResult
 			{
@@ -55,12 +44,27 @@ namespace ConsoleApplication1
 				Severity = DiagnosticSeverity.Warning,
 				Locations =
 					new[] {
-							new DiagnosticResultLocation("Test0.cs", 14, 29)
+							new DiagnosticResultLocation("Test0.cs", 4, 28)
 						}
 			};
 
 
 			VerifyDiagnostic(test, expected);
+		}
+
+		[TestMethod]
+		public void AssertThatDiagnosticIsNotTriggeredWhenArgumentsCountIsWrong()
+		{
+			var test = @"
+		public void TestMethod()
+		{
+			var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5);
+
+		}
+";
+
+
+			VerifyDiagnostic(test);
 		}
 
 
