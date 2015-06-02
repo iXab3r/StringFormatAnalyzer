@@ -17,12 +17,10 @@ namespace StringFormatAnalyzer.Test
 	public class UnitTest : CSharpDiagnosticVerifier
 	{
 
-		//No diagnostics expected to show up
 		[TestMethod]
 		public void TestMethod1()
 		{
 			var test = @"";
-
 			this.VerifyDiagnostic(test);
 		}
 
@@ -62,8 +60,6 @@ namespace StringFormatAnalyzer.Test
 
 		}
 ";
-
-
 			VerifyDiagnostic(test);
 		}
 

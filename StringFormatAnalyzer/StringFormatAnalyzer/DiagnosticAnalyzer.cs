@@ -23,7 +23,6 @@ namespace StringFormatAnalyzer
 
 		internal const string Category = "Naming";
 
-		// You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
 		internal static readonly LocalizableString Title = new LocalizableResourceString(
 			nameof(Resources.AnalyzerTitle),
 			Resources.ResourceManager,
@@ -53,7 +52,6 @@ namespace StringFormatAnalyzer
 
 		public override void Initialize(AnalysisContext context)
 		{
-			// TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
 			context.RegisterSyntaxNodeAction(Action, SyntaxKind.InvocationExpression);
 		}
 
@@ -67,29 +65,37 @@ namespace StringFormatAnalyzer
 
 			Debug.WriteLine("node: {0}", expression);
 
-			if (IsStringFormat(expression, _context.SemanticModel))
+			if (!IsStringFormat(expression, _context.SemanticModel))
 			{
-				Debug.WriteLine("String format detected: {0}", expression);
-
-				var formatString = expression.ArgumentList.Arguments[0].ToString();
-				var tokens = BreakToTokens(formatString);
-				var args = expression.ArgumentList.Arguments.Skip(1).ToArray();
-
-				Debug.WriteLine("Tokens:\r\n\t{0}", String.Join("\r\n\t", tokens.Select(x => x.ToString())));
-				if (args.Length != tokens.Length)
-				{
-					Debug.WriteLine("Wrong args count. Expected {0}, got {1}", tokens.Length, args.Length);
-					return;
-				}
-
-
-				if (!IsOrdered(tokens))
-				{
-					var msgParameter = String.Join(" ", tokens.Select(x => x.Index));
-					var diagnostic = Diagnostic.Create(Rule, _context.Node.SyntaxTree.GetLocation(expression.ArgumentList.Arguments[0].Span), msgParameter);
-					_context.ReportDiagnostic(diagnostic);
-				}
+				return;
 			}
+
+			Debug.WriteLine("String format detected: {0}", expression);
+
+			var formatString = expression.ArgumentList.Arguments[0].ToString();
+
+			var tokens = BreakToTokens(formatString);
+			Debug.WriteLine("Tokens:\r\n\t{0}", String.Join("\r\n\t", tokens.Select(x => x.ToString())));
+			if (tokens.Length == 0)
+			{
+				return;
+			}
+
+			var args = expression.ArgumentList.Arguments.Skip(1).ToArray();
+			if (args.Length != tokens.Length)
+			{
+				Debug.WriteLine("Wrong args count. Expected {0}, got {1}", tokens.Length, args.Length);
+				return;
+			}
+
+			if (IsOrdered(tokens))
+			{
+				return;
+			}
+
+			var msgParameter = String.Join(" ", tokens.Select(x => x.Index));
+			var diagnostic = Diagnostic.Create(Rule, _context.Node.SyntaxTree.GetLocation(expression.ArgumentList.Arguments[0].Span), msgParameter);
+			_context.ReportDiagnostic(diagnostic);
 		}
 
 		private bool IsOrdered(StringFormatToken[] _tokens)
