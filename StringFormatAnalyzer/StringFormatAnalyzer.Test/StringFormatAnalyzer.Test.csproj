@@ -105,9 +105,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Verifiers\DiagnosticVerifier.cs" />
-    <None Include="Helpers\CodeFixVerifier.Helper.cs" />
-    <None Include="Helpers\DiagnosticResult.cs" />
-    <None Include="Helpers\DiagnosticVerifier.Helper.cs" />
     <Compile Include="UnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
