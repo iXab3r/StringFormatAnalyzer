@@ -24,16 +24,21 @@ namespace StringFormatAnalyzer.Test
 			this.VerifyDiagnostic(test);
 		}
 
+		public void StringFormatExample()
+		{
+			String.Format("{0} {2} {1}", 0, 1, 2);
+		}
+
 		[TestMethod]
 		public void AssertThatSimpleReorderingTriggersDiag()
 		{
-			var test = @"
+			var test = @"using System; Using System.Text; namespace Test { public class TestClass {
 		public void TestMethod()
 		{
 			var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5, 6);
 
 		}
-";
+}}";
 
 			var expected = new DiagnosticResult
 			{
@@ -53,7 +58,7 @@ namespace StringFormatAnalyzer.Test
 		[TestMethod]
 		public void AssertThatDiagnosticIsNotTriggeredWhenArgumentsCountIsWrong()
 		{
-			var test = @"
+			var test = @"using System; Using System.Text;
 		public void TestMethod()
 		{
 			var str = String.Format(""test {0} {1} {3} {2} {5} {4}"", 1,2,3,4,5);

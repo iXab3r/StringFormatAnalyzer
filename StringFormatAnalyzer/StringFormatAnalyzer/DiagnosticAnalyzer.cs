@@ -152,11 +152,10 @@ namespace StringFormatAnalyzer
 			{
 				return false;
 			}
-			var firstArgType = _semanticModel.GetTypeInfo(firstArg);
+			var firstArgType = _semanticModel.GetTypeInfo(firstArg.Expression);
 
 			var secondArg = args[1];
-			var secondArgType = _semanticModel.GetTypeInfo(secondArg);
-
+			var secondArgType = _semanticModel.GetTypeInfo(secondArg.Expression);
 			return true;
 		}
 
