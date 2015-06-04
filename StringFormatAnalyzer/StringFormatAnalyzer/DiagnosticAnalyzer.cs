@@ -140,22 +140,23 @@ namespace StringFormatAnalyzer
 			{
 				return false;
 			}
-			var args = argumentListSyntax.Arguments;
-
-			if (args.Count < 2)
+			
+			var methodSymbol = _semanticModel.GetSymbolInfo(_invocationExpression).Symbol as IMethodSymbol ;
+			if (methodSymbol == null)
 			{
 				return false;
 			}
 
-			var firstArg = args[0];
-			if (!firstArg.Expression.IsKind(SyntaxKind.StringLiteralExpression))
+			var parameters = methodSymbol.Parameters;
+			if (!parameters.Any())
 			{
 				return false;
 			}
-			var firstArgType = _semanticModel.GetTypeInfo(firstArg.Expression);
 
-			var secondArg = args[1];
-			var secondArgType = _semanticModel.GetTypeInfo(secondArg.Expression);
+			if (parameters.Count() < 2)
+			{
+				return false;
+			}
 			return true;
 		}
 
